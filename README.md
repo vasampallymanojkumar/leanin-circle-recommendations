@@ -23,7 +23,7 @@ Stop with Ctrl+C. The server binds only to localhost. Each startup creates/resee
 
 ### Time reference
 
-The supplied data is a frozen September 2026 snapshot. The default reference date is **2026-09-21 UTC**, matching the snapshot, rather than the evaluator's wall clock. It is returned as `as\_of` in every response. To evaluate freshness at another date:
+The supplied data is a frozen September 2026 snapshot. The default reference date is **2026-09-21 UTC**, matching the snapshot, rather than the evaluator's wall clock. It is returned as `as_of` in every response. To evaluate freshness at another date:
 
 ```bash
 python3 app.py --as-of 2026-11-06
@@ -33,7 +33,7 @@ This changes timestamp freshness, but does not recompute the supplied 30-day agg
 
 ## API
 
-`GET /users/{user\_id}/recommendations?limit=5`
+`GET /users/{user_id}/recommendations?limit=5`
 
 * Positive integer user ID; limit is an integer 1–20, default 5.
 * 200: user exists; zero or more recommendations, up to the limit.
@@ -41,13 +41,13 @@ This changes timestamp freshness, but does not recompute the supplied 30-day agg
 * 404: unknown user or route.
 * GET `/health` returns readiness and the reference date.
 
-Each recommendation has `id`, `name`, `slug`, `topic` (nullable), `format`, `join\_policy`, `score`, and `explanation`. The score is an internal relative ranking value, not a probability. Request-to-join Circles are explicitly described as such.
+Each recommendation has `id`, `name`, `slug`, `topic` (nullable), `format`, `join_policy`, `score`, and `explanation`. The score is an internal relative ranking value, not a probability. Request-to-join Circles are explicitly described as such.
 
 ## Ranking decisions
 
-1. Exclude existing memberships, unlisted Circles, full Circles, and activity older than 90 days (or dated after the reference date). Capacity uses the provided `member\_count`, not the membership export count.
+1. Exclude existing memberships, unlisted Circles, full Circles, and activity older than 90 days (or dated after the reference date). Capacity uses the provided `member_count`, not the membership export count.
 2. Affinity = 0.65 for a primary-topic interest match + 0.25 × fraction of stated interests matched by topic/tags. Tags are deduplicated. With no stated interests, use 0.35 for a primary-topic match to an existing membership instead.
-3. Health = 0.6 × exp(-days\_since\_activity / 30) + 0.4 × volume. Volume averages log-saturated feed (cap 20) and chat (cap 100) counts. Final score = 0.75 × affinity + 0.25 × health. Constants are explicit starting heuristics, not learned weights.
+3. Health = 0.6 × exp(-days_since_activity / 30) + 0.4 × volume. Volume averages log-saturated feed (cap 20) and chat (cap 100) counts. Final score = 0.75 × affinity + 0.25 × health. Constants are explicit starting heuristics, not learned weights.
 4. Sort descending by score, breaking ties by ascending ID. Greedily keep at most one Circle per primary topic. Untopiced Circles use their unique slug. Return fewer results rather than relax eligibility or repeat a topic.
 5. Produce explanations from the exact matching signals and freshness window. Cold-start copy never pretends to know the member's interests.
 
@@ -79,13 +79,12 @@ Expected seeded behavior:
 * `recommender.py`: transactional seed loader, eligibility, scoring, diversity, explanations.
 * `schema.sql`: normalized SQLite tables, foreign keys, checks, indexes.
 * `DESIGN.md`: one-page technical design.
-* `tests/test\_recommendations.py`: unit and HTTP integration tests.
-* `DATASET.md`, `data/`, `generate.mjs`: original synthetic dataset documentation and files.
-* `GITHUB\_STEPS.md`: manual publishing instructions.
+* `tests/test_recommendations.py`: unit and HTTP integration tests.
+* `data/`: the five supplied synthetic JSON dataset files.
 
 ## Scope and AI use
 
 This is a local take-home implementation, with a single-process HTTP server and no authentication. Production additions and known limitations are in `DESIGN.md`.
 
-ChatGPT/Codex assisted me with dataset inspection, implementation, tests, and documentation. The recommendation rules are explicit and inspectable; no runtime LLM is used. Before submission I have reviewed the code, run the tests and make sure the outputs are appropriated.
+ChatGPT/Codex assisted me with implementation, tests, and documentation. The recommendation rules are explicit and inspectable; no runtime LLM is used. Before submission I have reviewed the code, run the tests and make sure the outputs are appropriated.
 
